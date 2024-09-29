@@ -1,0 +1,69 @@
+name: Build LaTeX document
+
+on:
+  push:
+    branches:
+      - main  # Run the workflow only when a tag is created
+  workflow_dispatch:  # Allows the action to be triggered manually
+
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Set up Git repository
+        uses: actions/checkout@v4
+
+      # Compile the LaTeX document
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+
+      # Get the current date and repo name
+      - name: Get the current date and repo name
+        id: vars
+        run: |
+          echo "RELEASE_DATE=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+          echo "REPO_NAME=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_ENV
+
+      # Rename the PDF file
+      - name: Rename PDF file
+        run: mv main.pdf ${{ env.REPO_NAME }}_${{ env.RELEASE_DATE }}.pdf
+
+      # Determine if the workflow was triggered manually
+      - name: Set prerelease flag
+        id: prerelease_flag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "PRERELEASE=false" >> $GITHUB_ENV
+          else
+            echo "PRERELEASE=true" >> $GITHUB_ENV
+          fi
+
+      # Create the release and upload the PDF
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: ${{ env.PRERELEASE }}
+          tag_name: "v${{ env.RELEASE_DATE }}"
+          files: ${{ env.REPO_NAME }}_${{ env.RELEASE_DATE }}.pdf
+          token: ${{ secrets.TOKEN }}
+
+      # Delete old releases
+      - name: Delete old releases
+        uses: sgpublic/delete-release-action@v1.2
+        with:
+          # repo: '<owner>/<repoName>' # you can input another repo here, defaults to current repo
+          release-drop: false
+          release-keep-count: 3
+          release-drop-tag: true
+          pre-release-drop: true
+          pre-release-keep-count: 0
+          pre-release-drop-tag: true
+          draft-drop: true
+          draft-drop-count: -1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
