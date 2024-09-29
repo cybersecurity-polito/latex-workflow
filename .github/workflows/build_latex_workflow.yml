@@ -42,10 +42,16 @@ jobs:
       - name: Rename PDF file
         run: mv main.pdf ${{ env.REPO_NAME }}_${{ env.RELEASE_DATE }}.pdf
 
-      # Set prerelease flag
+      # Set prerelease and release-drop flags
       - name: Set prerelease flag
         id: prerelease_flag
-        run: echo "PRERELEASE=${{ inputs.prerelease }}" >> $GITHUB_ENV
+        run: |
+          echo "PRERELEASE=${{ inputs.prerelease }}" >> $GITHUB_ENV
+                    if [ "${{ env.PRERELEASE }}" = "true" ]; then
+            echo "RELEASE_DROP=false" >> $GITHUB_ENV
+          else
+            echo "RELEASE_DROP=true" >> $GITHUB_ENV
+          fi
 
       # Create the release and upload the PDF
       - name: Create Release
@@ -61,7 +67,7 @@ jobs:
       - name: Delete old releases
         uses: sgpublic/delete-release-action@v1.2
         with:
-          release-drop: ${{ env.PRERELEASE }}
+          release-drop: ${{ env.RELEASE_DROP }} # Clean up releases only if we're not using pre-releases
           release-keep-count: 0
           release-drop-tag: true
           pre-release-drop: true
