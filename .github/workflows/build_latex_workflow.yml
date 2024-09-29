@@ -13,6 +13,9 @@ on:
         required: false
         default: false
         type: boolean
+    secrets:
+      envPAT:
+        required: true
 
 jobs:
   build_latex:
@@ -52,7 +55,7 @@ jobs:
           prerelease: ${{ env.PRERELEASE }}
           tag_name: "v${{ env.RELEASE_DATE }}"
           files: ${{ env.REPO_NAME }}_${{ env.RELEASE_DATE }}.pdf
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.envPAT }}
 
       # Delete old releases
       - name: Delete old releases
@@ -67,4 +70,4 @@ jobs:
           draft-drop: true
           draft-drop-count: -1
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.envPAT }}

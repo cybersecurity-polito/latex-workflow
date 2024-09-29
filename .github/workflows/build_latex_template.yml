@@ -8,7 +8,9 @@ on:
 
 jobs:
   call_build_latex:
-    uses: ./.github/workflows/build_latex_workflow.yml
+    uses: cybersecurity-polito/latex-workflow/.github/workflows/build_latex_workflow.yml@main
     with:
       root_file: 'main.tex'
       prerelease: false
+    secrets:
+      envPAT: ${{ secrets.TOKEN }}
