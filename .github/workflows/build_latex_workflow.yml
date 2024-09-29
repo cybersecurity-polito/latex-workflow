@@ -1,15 +1,22 @@
 name: Build LaTeX document
 
 on:
-  push:
-    branches:
-      - main  # Run the workflow only when a tag is created
-  workflow_dispatch:  # Allows the action to be triggered manually
+  workflow_call:
+    inputs:
+      root_file:
+        description: 'The root LaTeX file to compile'
+        required: false
+        default: 'main.tex'
+        type: string
+      prerelease:
+        description: 'Set to true for a pre-release, false otherwise'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build_latex:
     runs-on: ubuntu-latest
-
     steps:
       # Checkout the repository
       - name: Set up Git repository
@@ -19,7 +26,7 @@ jobs:
       - name: Compile LaTeX document
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: main.tex
+          root_file: ${{ inputs.root_file }}
 
       # Get the current date and repo name
       - name: Get the current date and repo name
@@ -32,15 +39,10 @@ jobs:
       - name: Rename PDF file
         run: mv main.pdf ${{ env.REPO_NAME }}_${{ env.RELEASE_DATE }}.pdf
 
-      # Determine if the workflow was triggered manually
+      # Set prerelease flag
       - name: Set prerelease flag
         id: prerelease_flag
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "PRERELEASE=false" >> $GITHUB_ENV
-          else
-            echo "PRERELEASE=true" >> $GITHUB_ENV
-          fi
+        run: echo "PRERELEASE=${{ inputs.prerelease }}" >> $GITHUB_ENV
 
       # Create the release and upload the PDF
       - name: Create Release
@@ -56,7 +58,6 @@ jobs:
       - name: Delete old releases
         uses: sgpublic/delete-release-action@v1.2
         with:
-          # repo: '<owner>/<repoName>' # you can input another repo here, defaults to current repo
           release-drop: false
           release-keep-count: 3
           release-drop-tag: true
