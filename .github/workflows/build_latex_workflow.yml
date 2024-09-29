@@ -61,8 +61,8 @@ jobs:
       - name: Delete old releases
         uses: sgpublic/delete-release-action@v1.2
         with:
-          release-drop: false
-          release-keep-count: 3
+          release-drop: ${{ env.PRERELEASE }}
+          release-keep-count: 0
           release-drop-tag: true
           pre-release-drop: true
           pre-release-keep-count: 0
