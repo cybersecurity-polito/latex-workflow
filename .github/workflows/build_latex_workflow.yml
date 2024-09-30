@@ -24,6 +24,12 @@ jobs:
       # Checkout the repository
       - name: Set up Git repository
         uses: actions/checkout@v4
+        with:
+          submodules: true  # Ensure submodules are checked out
+
+      # Initialize and update submodules
+      - name: Initialize and update submodules
+        run: git submodule update --init --recursive
 
       # Compile the LaTeX document
       - name: Compile LaTeX document
@@ -47,7 +53,7 @@ jobs:
         id: prerelease_flag
         run: |
           echo "PRERELEASE=${{ inputs.prerelease }}" >> $GITHUB_ENV
-                    if [ "${{ env.PRERELEASE }}" = "true" ]; then
+          if [ "${{ env.PRERELEASE }}" = "true" ]; then
             echo "RELEASE_DROP=false" >> $GITHUB_ENV
           else
             echo "RELEASE_DROP=true" >> $GITHUB_ENV
