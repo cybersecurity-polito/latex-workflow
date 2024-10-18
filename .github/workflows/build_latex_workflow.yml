@@ -1,6 +1,11 @@
 name: Build LaTeX document
 
 on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
   workflow_call:
     inputs:
       root_file:
@@ -47,6 +52,13 @@ jobs:
       # Rename the PDF file
       - name: Rename PDF file
         run: mv main.pdf ${{ env.REPO_NAME }}_${{ env.RELEASE_DATE }}.pdf
+          
+      - name: Upload PDF as artifact
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: LaTeX-build-${{ env.RELEASE_DATE }}
+          path: ${{ env.REPO_NAME }}_${{ env.RELEASE_DATE }}.pdf
 
       # Set prerelease and release-drop flags
       - name: Set prerelease flag
@@ -63,6 +75,7 @@ jobs:
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
+        if: ${{ github.event_name != 'pull_request' }}
         with:
           prerelease: ${{ env.PRERELEASE }}
           tag_name: "v${{ env.RELEASE_DATE }}"
@@ -72,6 +85,7 @@ jobs:
       # Delete old releases
       - name: Delete old releases
         uses: sgpublic/delete-release-action@v1.2
+        if: ${{ github.event_name != 'pull_request' }}
         with:
           release-drop: ${{ env.RELEASE_DROP }} # Clean up releases only if we're not using pre-releases
           release-keep-count: 0
