@@ -1,11 +1,6 @@
 name: Build LaTeX document
 
 on:
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize, reopened]
-
   workflow_call:
     inputs:
       root_file:
