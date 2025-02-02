@@ -50,7 +50,7 @@ jobs:
           
       - name: Upload PDF as artifact
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: LaTeX-build-${{ env.RELEASE_DATE }}
           path: ${{ env.REPO_NAME }}_${{ env.RELEASE_DATE }}.pdf
